@@ -30,10 +30,6 @@ def step_rounddown(num, step):
 def cartesian_product(vectors):
     return [i for i in itertools.product(*vectors)]
 
-def hp_function(hps):
-    #Our main function to minimize once we have our coefficients
-    return sum([coef[0] + coef[1]*hp + coef[2]*hp**2 for coef, hp in zip(coefs, hps)])#Why the fuck are quadratic regression coefficient orders backwards
-
 class HyperParameter(object):
     def __init__(self, min, max, step, step_decrease_factor, stop_threshold, label):
         self.min = min

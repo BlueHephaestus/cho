@@ -10,20 +10,24 @@ from cho_config import Configurer
 
 import sound_notifications
 
+def hp_function(hps):
+    #Our main function to minimize once we have our coefficients
+    return sum([coef[0] + coef[1]*hp + coef[2]*hp**2 for coef, hp in zip(coefs, hps)])#Why the fuck are quadratic regression coefficient orders backwards
+
 """
 BEGIN USER INTERFACE FOR CONFIGURATION
 """
 n_y = 10#Number of y values we look at the end of our output
 run_count = 3
-run_decrement = 1#Amount we decrease the number of runs as we iterate. Will start at initial and never go < 1
-epochs = 100
+run_decrement = 0#Amount we decrease the number of runs as we iterate. Will start at initial and never go < 1
+epochs = 200
 output_types = 1
-archive_dir = "../dennis/dennis4/data/mfcc_expanded_samples.pkl.gz"#Our input data
+archive_dir = "../dennis4/data/mfcc_expanded_samples.pkl.gz"#Our input data
 
 output_training_cost = False
 output_training_accuracy = False
-output_validation_accuracy = False
-output_test_accuracy = True
+output_validation_accuracy = True
+output_test_accuracy = False
 final_test_run = True
 #0 = Training Cost, 1 = Training Accuracy, etc.
 
@@ -31,8 +35,8 @@ final_test_run = True
 configurer = Configurer(epochs, output_types, output_training_cost, output_training_accuracy, output_validation_accuracy, output_test_accuracy, archive_dir)
 
 #Set our initial HPs for cho to search through and optimize
-m = cho_base.HyperParameter(10, 100, 10, .1, 1, "Mini Batch Size")
-n = cho_base.HyperParameter(1.0, 1.0, 0, .2, 0.02, "Learning Rate")#I really recommend not putting this to 0 by default on accident like I did too many times
+m = cho_base.HyperParameter(10, 10, 0, .1, 1, "Mini Batch Size")
+n = cho_base.HyperParameter(0.0, 1.0, .1, .1, 0.001, "Learning Rate")#I really recommend not putting this to 0 by default on accident like I did too many times
 u = cho_base.HyperParameter(0.0, 0.0, 0, .1, 0.01, "Momentum Coefficient")
 l = cho_base.HyperParameter(0.0, 0.0, 0, .1, 0.01, "L2 Regularization Rate")
 p = cho_base.HyperParameter(0.0, 0.0, 0, .1, 0.01, "Dropout Regularization Percentage")
@@ -65,7 +69,7 @@ while True:
         if final_test_run:
             #Feel free to disable this
             print "Getting Final Optimized Resulting Values..."
-            config_avg_result = list(configurer.run_config(run_count, hp_vectors[0][0], hp_vectors[1][0], hp_vectors[2][0], hp_vectors[3][0], hp_vectors[4][0], 419, 69).items())
+            config_avg_result = list(configurer.run_config(run_count, int(hp_vectors[0][0]), hp_vectors[1][0], hp_vectors[2][0], hp_vectors[3][0], hp_vectors[4][0], 419, 69).items())
             print "Final Results with chosen Optimized Values(You should know what output types you enabled so you know what these stand for):"
             for output_type_index, output_type in enumerate(config_avg_result[0][1]):#Just so we know the number
                 print "Output Type #%i: %s" % (output_type_index, ', '.join(map(str, [epoch[1][output_type_index] for epoch in config_avg_result[-n_y:]])))
@@ -143,7 +147,7 @@ while True:
     #print coefs
 
     print "Computing Minimum of Multivariable Hyper Parameter Function..."
-    res = minimize(cho_base.hp_function, placeholder_hps, bounds=bounds, method='TNC', tol=1e-10, options={'xtol': 1e-8, 'disp': False})
+    res = minimize(hp_function, placeholder_hps, bounds=bounds, method='TNC', tol=1e-10, options={'xtol': 1e-8, 'disp': False})
 
     #Now our res.x are our new center point values
     center_points = res.x

@@ -1,11 +1,13 @@
 #So we can import without being there
 import sys
-sys.path.append("../dennis/dennis4/src")
+sys.path.append("../dennis4/src")
 
 #For Cho's use optimizing
 import dennis4
 from dennis4 import Network
-from dennis4 import sigmoid, tanh, ReLU, ConvPoolLayer, FullyConnectedLayer, SoftmaxLayer
+from dennis4 import sigmoid, tanh, ReLU, linear
+from dennis4 import ConvPoolLayer, FullyConnectedLayer, SoftmaxLayer
+from dennis4 import log_likelihood, cross_entropy, quadratic
 
 import json
 import sample_loader
@@ -34,7 +36,7 @@ class Configurer(object):
         self.output_title="Cho Tests"
         self.output_filename="cho_tests"
         self.output_type_names = ["Training Cost", "Training % Accuracy", "Validation % Accuracy", "Test % Accuracy"]
-        self.print_results = True
+        self.print_results = False
         self.print_perc_complete = False
         self.update_output = True
         self.graph_output = False
@@ -106,16 +108,41 @@ class Configurer(object):
             SoftmaxLayer(n_in=30, n_out=7)], mini_batch_size), mini_batch_size, 
             learning_rate, momentum_coefficient, regularization_rate, 100, 10, ""] 
         for r in range(run_count)
+
+
+        DONE, LOG-LIKELIHOOD AND SOFTMAX
+                    [Network([ 
+                        FullyConnectedLayer(n_in=51*51, n_out=300), 
+                        FullyConnectedLayer(n_in=300, n_out=80), 
+                        FullyConnectedLayer(n_in=80, n_out=20), 
+                        SoftmaxLayer(n_in=20, n_out=7)], mini_batch_size, cost=log_likelihood), mini_batch_size, 
+                        learning_rate, momentum_coefficient, regularization_rate, 100, 10, ""] 
+                    for r in range(run_count)
+
+        NEXT, WITH CROSS ENTROPY AND SIGMOID
+                    [Network([ 
+                        FullyConnectedLayer(n_in=51*51, n_out=300), 
+                        FullyConnectedLayer(n_in=300, n_out=80), 
+                        FullyConnectedLayer(n_in=80, n_out=20), 
+                        FullyConnectedLayer(n_in=20, n_out=7)], mini_batch_size, cost=cross_entropy), mini_batch_size, 
+                        learning_rate, momentum_coefficient, regularization_rate, 100, 10, ""] 
+                    for r in range(run_count)
+
+        NEXT, WITH QUADRATIC AND LINEAR
+                    [Network([ 
+                        FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=sigmoid), 
+                        FullyConnectedLayer(n_in=300, n_out=80, activation_fn=sigmoid), 
+                        FullyConnectedLayer(n_in=80, n_out=20, activation_fn=sigmoid), 
+                        FullyConnectedLayer(n_in=20, n_out=7, activation_fn=linear)], mini_batch_size, cost=quadratic), mini_batch_size, 
+                        learning_rate, momentum_coefficient, regularization_rate, 100, 10, ""] 
+                    for r in range(run_count)
         '''
         config = [
                     [Network([ 
-                        ConvPoolLayer(image_shape=(mini_batch_size, 1, 51, 51),
-                            filter_shape=(20, 1, 8, 8),
-                            poolsize=(2,2)),
-                        FullyConnectedLayer(n_in=22*22*20, n_out=2000), 
-                        FullyConnectedLayer(n_in=2000, n_out=100), 
-                        FullyConnectedLayer(n_in=100, n_out=30), 
-                        SoftmaxLayer(n_in=30, n_out=7)], mini_batch_size), mini_batch_size, 
+                        FullyConnectedLayer(n_in=51*51, n_out=300), 
+                        FullyConnectedLayer(n_in=300, n_out=80), 
+                        FullyConnectedLayer(n_in=80, n_out=20), 
+                        FullyConnectedLayer(n_in=20, n_out=7)], mini_batch_size, cost=cross_entropy), mini_batch_size, 
                         learning_rate, momentum_coefficient, regularization_rate, 100, 10, ""] 
                     for r in range(run_count)
                     
