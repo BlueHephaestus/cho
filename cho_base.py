@@ -46,15 +46,19 @@ class HyperParameter(object):
             val_vector = frange(self.min, self.max+self.step, self.step)
             #mini batch size brought this about, check if integer
             #Since we won't let mini batch become decimals
+            '''
             for val_index, val in enumerate(val_vector):
-                if val % 1 == 0.0: 
+                if val % 1.0 == 0.0: 
                     val_vector[val_index] = int(val)
+            '''
 
             return val_vector
         else:
             #Since if our step = 0, we only have a constant value here.
-            if self.min % 1 == 0.0:
+            '''
+            if self.min % 1.0 == 0.0:
                 self.min = int(self.min)
+            '''
 
             return [self.min]
 

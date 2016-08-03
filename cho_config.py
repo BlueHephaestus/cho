@@ -22,6 +22,8 @@ class Configurer(object):
 
         #Our default values
         self.output_types = output_types#DON'T FORGET TO UPDATE THIS WITH THE OTHERS
+        self.scheduler_check_interval = 10
+        self.param_decrease_rate = 2
         self.training_data_subsections=None#Won't be needing this for our tiny dataset!
 
         #Currently too fast for these to be of much use, we might be able to use them well when we get deeper and more convolutional
@@ -44,7 +46,7 @@ class Configurer(object):
         #Will by default subplot the output types, will make config*outputs if that option is specified as well.
         subplot_seperate_configs = False
 
-    def run_config(self, run_count, mini_batch_size, learning_rate, momentum_coefficient, regularization_rate, p_dropout, config_index, config_count ):#Last two are for progress
+    def run_config(self, run_count, mini_batch_size, learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, p_dropout, config_index, config_count ):#Last two are for progress
 
         #We run one config each time from cho, adding to our output dict each time
 
@@ -110,42 +112,15 @@ class Configurer(object):
         for r in range(run_count)
 
 
-        DONE, LOG-LIKELIHOOD AND SOFTMAX
-                    [Network([ 
-                        FullyConnectedLayer(n_in=51*51, n_out=300), 
-                        FullyConnectedLayer(n_in=300, n_out=80), 
-                        FullyConnectedLayer(n_in=80, n_out=20), 
-                        SoftmaxLayer(n_in=20, n_out=7)], mini_batch_size, cost=log_likelihood), mini_batch_size, 
-                        learning_rate, momentum_coefficient, regularization_rate, 100, 10, ""] 
-                    for r in range(run_count)
-
-        NEXT, WITH CROSS ENTROPY AND SIGMOID
-                    [Network([ 
-                        FullyConnectedLayer(n_in=51*51, n_out=300), 
-                        FullyConnectedLayer(n_in=300, n_out=80), 
-                        FullyConnectedLayer(n_in=80, n_out=20), 
-                        FullyConnectedLayer(n_in=20, n_out=7)], mini_batch_size, cost=cross_entropy), mini_batch_size, 
-                        learning_rate, momentum_coefficient, regularization_rate, 100, 10, ""] 
-                    for r in range(run_count)
-
-        NEXT, WITH QUADRATIC AND LINEAR
-                    [Network([ 
-                        FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=sigmoid), 
-                        FullyConnectedLayer(n_in=300, n_out=80, activation_fn=sigmoid), 
-                        FullyConnectedLayer(n_in=80, n_out=20, activation_fn=sigmoid), 
-                        FullyConnectedLayer(n_in=20, n_out=7, activation_fn=linear)], mini_batch_size, cost=quadratic), mini_batch_size, 
-                        learning_rate, momentum_coefficient, regularization_rate, 100, 10, ""] 
-                    for r in range(run_count)
         '''
         config = [
                     [Network([ 
-                        FullyConnectedLayer(n_in=51*51, n_out=300), 
-                        FullyConnectedLayer(n_in=300, n_out=80), 
-                        FullyConnectedLayer(n_in=80, n_out=20), 
-                        FullyConnectedLayer(n_in=20, n_out=7)], mini_batch_size, cost=cross_entropy), mini_batch_size, 
-                        learning_rate, momentum_coefficient, regularization_rate, 100, 10, ""] 
+                        FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=ReLU), 
+                        FullyConnectedLayer(n_in=300, n_out=80, activation_fn=ReLU), 
+                        FullyConnectedLayer(n_in=80, n_out=20, activation_fn=ReLU), 
+                        SoftmaxLayer(n_in=20, n_out=7)], mini_batch_size, cost=log_likelihood), mini_batch_size, 
+                        learning_rate, optimization, optimization_term1, optimization_term2 regularization_rate, self.scheduler_check_interval, self.param_decrease_rate, ""] 
                     for r in range(run_count)
-                    
                  ]
 
         #First, we run our configuration
@@ -183,8 +158,7 @@ class Configurer(object):
             '''
             scheduler_check_interval = config[run_index][5]
             param_decrease_rate = config[run_index][6]
-            output_dict = net.SGD(output_dict, self.training_data, self.epochs, mini_batch_size, learning_rate, self.validation_data, self.test_data, momentum_coefficient=momentum_coefficient, lmbda=regularization_rate, 
-                    scheduler_check_interval=scheduler_check_interval, param_decrease_rate=param_decrease_rate)
+            output_dict = net.SGD(output_dict, self.training_data, self.epochs, mini_batch_size, learning_rate, self.validation_data, self.test_data, optimization=optimization, optimization_term1=optimization_term1, optimization_term2=optimization_term2, lmbda=regularization_rate, scheduler_check_interval=scheduler_check_interval, param_decrease_rate=param_decrease_rate)
         
         #After all runs have executed
 
