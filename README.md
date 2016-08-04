@@ -4,7 +4,7 @@ What started with [Dennis](https://github.com/DarkElement75/dennis), I have now 
 
 1. Generate vectors of Hyper Parameter(HP) values
 2. Get cartesian product
-3. Get average point output for each HP in the Cartesian Product via if three learning rates 0.3, 0.4, 0.5 and three mini batch sizes 10, 20, 30, we'd get the three values for (10, 0.3), (10, 0.4), (10, 0.5) and average these outputs since the effect of m=10 should be equivalent across the different learning rates. This gives us one value for our m=10(and the rest of the mini batch sizes) to use in the following steps. Note: I realize m is a relatively independent HP and can be determined as such.
+3. Get average point output for each HP in the Cartesian Product i.e. if three learning rates 0.3, 0.4, 0.5 and three mini batch sizes 10, 20, 30, we'd get the three values for (10, 0.3), (10, 0.4), (10, 0.5) and average these outputs since the effect of m=10 should be equivalent across the different learning rates. This gives us one value for our m=10(and the rest of the mini batch sizes) to use in the following steps. Note: I realize m is a relatively independent HP and can be determined as such.
 4. Use these new points for each HP to generate a quadratic linear regression of the form A + Bx + Cx^2 for each HP
 5. Add all of our quadratic linear regressions together to get a multivariable equation such as 5 + 4m + 7.2m^2 + .32n + 6.32n^2
 6. Compute the minimum to 1e-8 of our multivariable function using scipy.optimize.minimize with respective bounds

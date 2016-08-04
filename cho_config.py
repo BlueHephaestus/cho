@@ -46,81 +46,120 @@ class Configurer(object):
         #Will by default subplot the output types, will make config*outputs if that option is specified as well.
         subplot_seperate_configs = False
 
-    def run_config(self, run_count, mini_batch_size, learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, p_dropout, config_index, config_count ):#Last two are for progress
+    def run_config(self, run_count, mini_batch_size, learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, p_dropout, global_config_index, config_index, config_count ):#Last two are for progress
 
         #We run one config each time from cho, adding to our output dict each time
 
         #Gotta make seperate Network instances for each run else the params don't get re-initialized
-
-        #Black --> white
-        '''
-        Possible final layout
-        [Network([ 
-            ConvPoolLayer(image_shape=(mini_batch_size, 1, 47, 47),
-                filter_shape=(20, 1, 6, 6),
-                poolsize=(2,2)),
-            ConvPoolLayer(image_shape=(mini_batch_size, 20, 21, 21),
-                filter_shape=(40, 20, 4, 4),
-                poolsize=(2,2)),
-            FullyConnectedLayer(n_in=3240, n_out=800, p_dropout=p_dropout), 
-            FullyConnectedLayer(n_in=800, n_out=200, p_dropout=p_dropout), 
-            FullyConnectedLayer(n_in=200, n_out=50, p_dropout=p_dropout), 
-            SoftmaxLayer(n_in=50, n_out=7, p_dropout=p_dropout)], mini_batch_size), mini_batch_size, 
-            learning_rate, momentum_coefficient, regularization_rate, 100, 10, ""] 
-        for r in range(self.run_count)
-
-        Secondary Possible Final Layout, less deep and convolutional
-        [Network([ 
-            ConvPoolLayer(image_shape=(mini_batch_size, 1, 47, 47),
-                filter_shape=(20, 1, 8, 8),
-                poolsize=(2,2)),
-            FullyConnectedLayer(n_in=20**3, n_out=2000), 
-            FullyConnectedLayer(n_in=2000, n_out=100), 
-            FullyConnectedLayer(n_in=100, n_out=30), 
-            SoftmaxLayer(n_in=30, n_out=7)], mini_batch_size), mini_batch_size, 
-            learning_rate, momentum_coefficient, regularization_rate, 100, 10, ""] 
-        for r in range(run_count)
-
-        Another one
-        [Network([ 
-            ConvPoolLayer(image_shape=(mini_batch_size, 1, 47, 47),
-                filter_shape=(20, 1, 8, 8),
-                poolsize=(2,2)),
-            FullyConnectedLayer(n_in=20**3, n_out=2000), 
-            FullyConnectedLayer(n_in=2000, n_out=100), 
-            FullyConnectedLayer(n_in=100, n_out=30), 
-            SoftmaxLayer(n_in=30, n_out=7)], mini_batch_size), mini_batch_size, 
-            learning_rate, momentum_coefficient, regularization_rate, 100, 10, ""] 
-        for r in range(run_count)
-
-        [Network([ 
-            ConvPoolLayer(image_shape=(mini_batch_size, 1, 47, 47),
-                filter_shape=(20, 1, 8, 8),
-                poolsize=(2,2)),
-            FullyConnectedLayer(n_in=20**3, n_out=100), 
-            FullyConnectedLayer(n_in=100, n_out=30), 
-            SoftmaxLayer(n_in=30, n_out=7)], mini_batch_size), mini_batch_size, 
-            learning_rate, momentum_coefficient, regularization_rate, 100, 10, ""] 
-        for r in range(run_count)
-
-        Old Layout
-        [Network([ 
-            FullyConnectedLayer(n_in=47*47, n_out=100), 
-            FullyConnectedLayer(n_in=100, n_out=30), 
-            SoftmaxLayer(n_in=30, n_out=7)], mini_batch_size), mini_batch_size, 
-            learning_rate, momentum_coefficient, regularization_rate, 100, 10, ""] 
-        for r in range(run_count)
-
-
-        '''
-        config = [
-                    [Network([ 
-                        FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=ReLU), 
-                        FullyConnectedLayer(n_in=300, n_out=80, activation_fn=ReLU), 
-                        FullyConnectedLayer(n_in=80, n_out=20, activation_fn=ReLU), 
-                        SoftmaxLayer(n_in=20, n_out=7)], mini_batch_size, cost=log_likelihood), mini_batch_size, 
-                        learning_rate, optimization, optimization_term1, optimization_term2 regularization_rate, self.scheduler_check_interval, self.param_decrease_rate, ""] 
-                    for r in range(run_count)
+        configs = [
+                    [
+                        [Network([ 
+                            FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=sigmoid), 
+                            FullyConnectedLayer(n_in=300, n_out=80, activation_fn=sigmoid), 
+                            FullyConnectedLayer(n_in=80, n_out=20, activation_fn=sigmoid), 
+                            SoftmaxLayer(n_in=20, n_out=7)], mini_batch_size, cost=log_likelihood), mini_batch_size, 
+                            learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, self.scheduler_check_interval, self.param_decrease_rate, ""] 
+                        for r in range(run_count)
+                    ],
+                    [
+                        [Network([ 
+                            FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=tanh), 
+                            FullyConnectedLayer(n_in=300, n_out=80, activation_fn=tanh), 
+                            FullyConnectedLayer(n_in=80, n_out=20, activation_fn=tanh), 
+                            SoftmaxLayer(n_in=20, n_out=7)], mini_batch_size, cost=log_likelihood), mini_batch_size, 
+                            learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, self.scheduler_check_interval, self.param_decrease_rate, ""] 
+                        for r in range(run_count)
+                    ],
+                    [
+                        [Network([ 
+                            FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=ReLU), 
+                            FullyConnectedLayer(n_in=300, n_out=80, activation_fn=ReLU), 
+                            FullyConnectedLayer(n_in=80, n_out=20, activation_fn=ReLU), 
+                            SoftmaxLayer(n_in=20, n_out=7)], mini_batch_size, cost=log_likelihood), mini_batch_size, 
+                            learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, self.scheduler_check_interval, self.param_decrease_rate, ""] 
+                        for r in range(run_count)
+                    ],
+                    [
+                        [Network([ 
+                            FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=linear), 
+                            FullyConnectedLayer(n_in=300, n_out=80, activation_fn=linear), 
+                            FullyConnectedLayer(n_in=80, n_out=20, activation_fn=linear), 
+                            SoftmaxLayer(n_in=20, n_out=7)], mini_batch_size, cost=log_likelihood), mini_batch_size, 
+                            learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, self.scheduler_check_interval, self.param_decrease_rate, ""] 
+                        for r in range(run_count)
+                    ],
+                    [
+                        [Network([ 
+                            FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=sigmoid), 
+                            FullyConnectedLayer(n_in=300, n_out=80, activation_fn=sigmoid), 
+                            FullyConnectedLayer(n_in=80, n_out=20, activation_fn=sigmoid), 
+                            FullyConnectedLayer(n_in=20, n_out=7, activation_fn=sigmoid)], mini_batch_size, cost=cross_entropy), mini_batch_size, 
+                            learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, self.scheduler_check_interval, self.param_decrease_rate, ""] 
+                        for r in range(run_count)
+                    ],
+                    [
+                        [Network([ 
+                            FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=tanh), 
+                            FullyConnectedLayer(n_in=300, n_out=80, activation_fn=tanh), 
+                            FullyConnectedLayer(n_in=80, n_out=20, activation_fn=tanh), 
+                            FullyConnectedLayer(n_in=20, n_out=7, activation_fn=sigmoid)], mini_batch_size, cost=cross_entropy), mini_batch_size, 
+                            learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, self.scheduler_check_interval, self.param_decrease_rate, ""] 
+                        for r in range(run_count)
+                    ],
+                    [
+                        [Network([ 
+                            FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=ReLU), 
+                            FullyConnectedLayer(n_in=300, n_out=80, activation_fn=ReLU), 
+                            FullyConnectedLayer(n_in=80, n_out=20, activation_fn=ReLU), 
+                            FullyConnectedLayer(n_in=20, n_out=7, activation_fn=sigmoid)], mini_batch_size, cost=cross_entropy), mini_batch_size, 
+                            learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, self.scheduler_check_interval, self.param_decrease_rate, ""] 
+                        for r in range(run_count)
+                    ],
+                    [
+                        [Network([ 
+                            FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=linear), 
+                            FullyConnectedLayer(n_in=300, n_out=80, activation_fn=linear), 
+                            FullyConnectedLayer(n_in=80, n_out=20, activation_fn=linear), 
+                            FullyConnectedLayer(n_in=20, n_out=7, activation_fn=sigmoid)], mini_batch_size, cost=cross_entropy), mini_batch_size, 
+                            learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, self.scheduler_check_interval, self.param_decrease_rate, ""] 
+                        for r in range(run_count)
+                    ],
+                    [
+                        [Network([ 
+                            FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=sigmoid), 
+                            FullyConnectedLayer(n_in=300, n_out=80, activation_fn=sigmoid), 
+                            FullyConnectedLayer(n_in=80, n_out=20, activation_fn=sigmoid), 
+                            FullyConnectedLayer(n_in=20, n_out=7, activation_fn=linear)], mini_batch_size, cost=quadratic), mini_batch_size, 
+                            learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, self.scheduler_check_interval, self.param_decrease_rate, ""] 
+                        for r in range(run_count)
+                    ],
+                    [
+                        [Network([ 
+                            FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=tanh), 
+                            FullyConnectedLayer(n_in=300, n_out=80, activation_fn=tanh), 
+                            FullyConnectedLayer(n_in=80, n_out=20, activation_fn=tanh), 
+                            FullyConnectedLayer(n_in=20, n_out=7, activation_fn=linear)], mini_batch_size, cost=quadratic), mini_batch_size, 
+                            learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, self.scheduler_check_interval, self.param_decrease_rate, ""] 
+                        for r in range(run_count)
+                    ],
+                    [
+                        [Network([ 
+                            FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=ReLU), 
+                            FullyConnectedLayer(n_in=300, n_out=80, activation_fn=ReLU), 
+                            FullyConnectedLayer(n_in=80, n_out=20, activation_fn=ReLU), 
+                            FullyConnectedLayer(n_in=20, n_out=7, activation_fn=linear)], mini_batch_size, cost=quadratic), mini_batch_size, 
+                            learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, self.scheduler_check_interval, self.param_decrease_rate, ""] 
+                        for r in range(run_count)
+                    ],
+                    [
+                        [Network([ 
+                            FullyConnectedLayer(n_in=51*51, n_out=300, activation_fn=linear), 
+                            FullyConnectedLayer(n_in=300, n_out=80, activation_fn=linear), 
+                            FullyConnectedLayer(n_in=80, n_out=20, activation_fn=linear), 
+                            FullyConnectedLayer(n_in=20, n_out=7, activation_fn=linear)], mini_batch_size, cost=quadratic), mini_batch_size, 
+                            learning_rate, optimization, optimization_term1, optimization_term2, regularization_rate, self.scheduler_check_interval, self.param_decrease_rate, ""] 
+                        for r in range(run_count)
+                    ],
                  ]
 
         #First, we run our configuration
@@ -131,7 +170,7 @@ class Configurer(object):
         #for config_index, config in enumerate(configs):
         for run_index in range(run_count): 
             output_dict[run_index] = {}
-            net = config[run_index][0]
+            net = configs[global_config_index][run_index][0]
             net.output_config(
                 output_filename=self.output_filename, 
                 training_data_subsections=self.training_data_subsections, 
@@ -156,8 +195,8 @@ class Configurer(object):
             momentum_coefficient = config[run_index][3]
             regularization_rate = config[run_index][4]
             '''
-            scheduler_check_interval = config[run_index][5]
-            param_decrease_rate = config[run_index][6]
+            scheduler_check_interval = configs[global_config_index][run_index][5]
+            param_decrease_rate = configs[global_config_index][run_index][6]
             output_dict = net.SGD(output_dict, self.training_data, self.epochs, mini_batch_size, learning_rate, self.validation_data, self.test_data, optimization=optimization, optimization_term1=optimization_term1, optimization_term2=optimization_term2, lmbda=regularization_rate, scheduler_check_interval=scheduler_check_interval, param_decrease_rate=param_decrease_rate)
         
         #After all runs have executed
