@@ -43,22 +43,22 @@ class HyperParameter(object):
         if self.step != 0:
             #print self.min, self.max, self.step
             #print frange(self.min, self.max+self.step, self.step)
-            val_vector = frange(self.min, self.max+self.step, self.step)
-            #mini batch size brought this about, check if integer
-            #Since we won't let mini batch become decimals
-            '''
-            for val_index, val in enumerate(val_vector):
-                if val % 1.0 == 0.0: 
-                    val_vector[val_index] = int(val)
-            '''
+            raw_val_vector = frange(self.min, self.max+self.step, self.step)
+            val_vector = []
+
+            #Trash our negative values, since there is currently no parameter that accepts them and still works
+            for val in raw_val_vector:
+                if val >= 0:
+                    if val % 1 == 0:
+                        #if int, convert to int
+                        val = int(val)
+                    val_vector.append(val)
 
             return val_vector
         else:
             #Since if our step = 0, we only have a constant value here.
-            '''
-            if self.min % 1.0 == 0.0:
-                self.min = int(self.min)
-            '''
-
-            return [self.min]
+            if self.min >= 0:
+                return [self.min]
+            else:
+                return [0.0]
 

@@ -14,14 +14,14 @@ import sms_notifications
 """
 BEGIN USER INTERFACE FOR CONFIGURATION
 """
-n_y = 20#Number of y values we look at the end of our output
+n_y = 20#Number of top y values we average over in our output
 run_count = 3
 run_decrement = 0#Amount we decrease the number of runs as we iterate. Will start at initial and never go < 1
-epochs = 200
-global_config_count = 2
+epochs = 150
+global_config_count = 4#DON'T FORGET TO UPDATE
 output_types = 1
 optimization='momentum'
-archive_dir = "../dennis4/data/mfcc_expanded_samples.pkl.gz"#Our input data
+archive_dir = "../dennis/dennis4/data/mfcc_expanded_samples.pkl.gz"#Our input data
 
 output_training_cost = False
 output_training_accuracy = False
@@ -36,20 +36,22 @@ sms_multiple_alerts = False#Disable to send one big message at the end instead o
 #Initialize our configurer
 configurer = Configurer(epochs, output_types, output_training_cost, output_training_accuracy, output_validation_accuracy, output_test_accuracy, archive_dir)
 
-#Set the start to append to if we are doing one big alert
-if not sms_multiple_alerts: sms_message = ""
+#Set array to append to we are doing one big alert
+if not sms_multiple_alerts: sms_messages = []
 
 for global_config_index in range(global_config_count):
     #Global Config Optimization loop
 
     #Set our initial HPs for cho to search through and optimize
     #Can make this be looped through as well by putting all of these in a bigger array and looping through it with the global config index, probably. Don't need that for now
+    #
+    #For special configurations, like having three run at once with different initial values, I recommend simply changing them in the config file
     m = cho_base.HyperParameter(10, 10, 0, .1, 1, "Mini Batch Size")
-    n = cho_base.HyperParameter(0.1, 2.1, 1, .1, 1, "Learning Rate")#I really recommend not putting this to 0 by default on accident like I did too many times
+    n = cho_base.HyperParameter(0.1, 3.1, 1, .1, .01, "Learning Rate")
     u = cho_base.HyperParameter(0.0, 0.0, 0, .1, 0.01, "Optimization Term 1")
     v = cho_base.HyperParameter(0.0, 0.0, 0, .1, 0.01, "Optimization Term 2")
-    l = cho_base.HyperParameter(0.0, 0.0, 0, .1, 0.01, "L2 Regularization Rate")
-    p = cho_base.HyperParameter(0.0, 0.0, 0, .1, 0.01, "Dropout Regularization Percentage")
+    l = cho_base.HyperParameter(0.0, 0.0, 0.0, .1, 0.01, "L2 Regularization Rate")
+    p = cho_base.HyperParameter(0.0, 0.0, 0.0, .1, 0.01, "Dropout Regularization Percentage")
 
     """
     END USER INTERFACE FOR CONFIGURATION
@@ -57,8 +59,6 @@ for global_config_index in range(global_config_count):
 
     hps = [m, n, u, v, l, p]
     n_hp = len(hps)
-
-    #config_avg_result = list(configurer.run_config(run_count, hp_config[0], hp_config[1], optimization, hp_config[2], hp_config[3], hp_config[4], hp_config[5], hp_config_index, hp_config_count).items())
 
     while True:
         #Normal optimization loop
@@ -76,19 +76,19 @@ for global_config_index in range(global_config_count):
                 break
         else:
             print "Optimization Finished, Hyper Parameters are:"
-            if sms_multiple_alerts:
-                #Reset if notifying every time
-                sms_message = "\nOptimization of Config #%i Finished, Hyper Parameters are:" % (global_config_index)#\n for header text
-            else:
-                sms_message += "\nOptimization of Config #%i Finished, Hyper Parameters are:" % (global_config_index)#\n for header text
+            sms_message = "\nOptimization of Config #%i Finished, Hyper Parameters are:" % (global_config_index)#\n for header text
 
             for hp_index, hp in enumerate(hp_vectors):
                 print "\t%s: %f" % (hps[hp_index].label, hps[hp_index].min)
                 sms_message += "\n%s: %f" % (hps[hp_index].label, hps[hp_index].min)
             #Send text message notification
-            if sms_alerts and sms_multiple_alerts:
-                sms_message += "\n\t-<3 C.H.O."
-                sms_notifications.send_sms(sms_message)
+            if sms_alerts:
+                if sms_multiple_alerts:
+                    sms_message += "\n\t-<3 C.H.O."
+                    sms_notifications.send_sms(sms_message)
+                else:
+                    sms_messages.append(sms_message)
+
 
             if final_test_run:
                 #Feel free to disable this
@@ -226,5 +226,7 @@ for global_config_index in range(global_config_count):
         
 if sms_alerts and not sms_multiple_alerts:
     #Send our big message
-    sms_message += "\n\t-<3 C.H.O."
-    sms_notifications.send_sms(sms_message)
+    sms_messages[-1] += "\n\t-<3 C.H.O."
+    for sms_message in sms_messages:
+        sms_notifications.send_sms(sms_message)
+        print sms_message
