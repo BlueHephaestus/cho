@@ -32,6 +32,8 @@ def cartesian_product(vectors):
 
 class HyperParameter(object):
     def __init__(self, min, max, step, step_decrease_factor, stop_threshold, label):
+        if min < 0:
+            min = 0.0
         self.min = min
         self.max = max
         self.step = step#How much we step to get our values through the range specified by min max
@@ -49,9 +51,6 @@ class HyperParameter(object):
             #Trash our negative values, since there is currently no parameter that accepts them and still works
             for val in raw_val_vector:
                 if val >= 0:
-                    if val % 1 == 0:
-                        #if int, convert to int
-                        val = int(val)
                     val_vector.append(val)
 
             return val_vector
