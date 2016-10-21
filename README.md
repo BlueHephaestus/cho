@@ -15,4 +15,4 @@ This has shown to be way faster and better than me, in fact what I thought was a
 
 Note: I may implement the MK system if I make enough improvements. In which case, this is Mk. 1
 
-####This repo is now more or less dead in favor of my new and far improved hyper parameter optimizer, [BBHO - Bayesian Black-box Hyper-parameter Optimizer](https://github.com/DarkElement75/bbho), which uses Bayesian Optimization instead of CHO's modified grid search. You can find all the details [in the repository!](https://github.com/DarkElement75/bbho)
+###This repo is now more or less dead in favor of my new and far improved hyper parameter optimizer, [BBHO - Bayesian Black-box Hyper-parameter Optimizer](https://github.com/DarkElement75/bbho), which uses Bayesian Optimization instead of CHO's modified grid search. You can find all the details [in the repository!](https://github.com/DarkElement75/bbho)
